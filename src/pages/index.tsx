@@ -101,7 +101,7 @@ export default function SurveyPage() {
               >
                 <FiSmile className="text-6xl text-blue-500 mb-4" />
                 <h1 className="text-3xl font-semibold mb-2 text-gray-800">Welcome!</h1>
-                <p className="text-gray-600">Let's begin your mental health check.</p>
+                <p className="text-gray-600">Let&apos;s begin your mental health check.</p>
               </motion.div>
             </motion.div>
           )}
