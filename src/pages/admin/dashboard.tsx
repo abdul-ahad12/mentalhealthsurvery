@@ -145,7 +145,7 @@ export default function Dashboard() {
 
           {/* Entries Tab */}
           {tab === 'entries' && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -212,7 +212,9 @@ export default function Dashboard() {
                           <p className="font-medium mb-1">
                             {idx + 1}. {q.text}
                           </p>
-                          <p className="text-gray-700">Answer: <span className="font-semibold">{option?.text || answerKey}</span></p>
+                          <p className="text-gray-700">
+                            Answer: <span className="font-semibold">{option?.text || answerKey}</span>
+                          </p>
                         </div>
                       );
                     })}
@@ -224,7 +226,7 @@ export default function Dashboard() {
 
           {/* Admins Tab */}
           {tab === 'admins' && (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -241,8 +243,8 @@ export default function Dashboard() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">{a.status}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(a.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                        {a.status === 'pending' && (
-                          <>                          
+                        {a.status === 'pending' ? (
+                          <>
                             <button
                               onClick={() => handleReview(a._id, true)}
                               className="text-green-500 hover:text-green-700"
@@ -258,8 +260,7 @@ export default function Dashboard() {
                               <FiXCircle size={20} />
                             </button>
                           </>
-                        )}
-                        {a.status !== 'pending' && (
+                        ) : (
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
