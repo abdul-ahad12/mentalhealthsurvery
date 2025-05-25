@@ -46,6 +46,9 @@ export default function Dashboard() {
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
 
+  const [loadingEntries, setLoadingEntries] = useState(false);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   useEffect(() => {
@@ -53,27 +56,31 @@ export default function Dashboard() {
       router.replace('/admin/login');
       return;
     }
-    fetchEntries();
-    fetchAdmins();
+    loadData();
+  }, [router, token]);
+
+  const loadData = () => {
+    // load entries
+    setLoadingEntries(true);
+    axios
+      .get<Entry[]>('/api/admin/entries', { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setEntries(res.data))
+      .catch(() => toast.error('Failed to load entries.'))
+      .finally(() => setLoadingEntries(false));
+
+    // load admins
+    setLoadingAdmins(true);
+    axios
+      .get<AdminUser[]>('/api/admin/list', { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setAdmins(res.data))
+      .catch(() => toast.error('Failed to load admins.'))
+      .finally(() => setLoadingAdmins(false));
+
     // load questions for detail view
     axios
       .get<Question[]>('/api/survey/questions')
       .then(res => setQuestions(res.data))
       .catch(() => toast.error('Failed to load questions.'));
-  }, [router, token]);
-
-  const fetchEntries = () => {
-    axios
-      .get<Entry[]>('/api/admin/entries', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setEntries(res.data))
-      .catch(() => toast.error('Failed to load entries.'));
-  };
-
-  const fetchAdmins = () => {
-    axios
-      .get<AdminUser[]>('/api/admin/list', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setAdmins(res.data))
-      .catch(() => toast.error('Failed to load admins.'));
   };
 
   const handleReview = (adminId: string, approve: boolean) => {
@@ -85,7 +92,7 @@ export default function Dashboard() {
       )
       .then(() => {
         toast.success(`Admin ${approve ? 'approved' : 'rejected'}.`);
-        fetchAdmins();
+        loadData();
       })
       .catch(() => toast.error('Action failed.'));
   };
@@ -145,35 +152,61 @@ export default function Dashboard() {
 
           {/* Entries Tab */}
           {tab === 'entries' && (
-            <div className="bg-white rounded-lg shadow overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {entries.map(e => (
-                    <tr
-                      key={e._id}
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => setSelectedEntry(e)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusIcon meter={e.meter} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{e.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{e.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">{e.meter}%</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(e.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-white rounded-lg shadow">
+              {loadingEntries ? (
+                <div className="flex justify-center p-10">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Phone
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Score
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {entries.map(e => (
+                        <tr
+                          key={e._id}
+                          className="hover:bg-gray-50 cursor-pointer"
+                          onClick={() => setSelectedEntry(e)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <StatusIcon meter={e.meter} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                            {e.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                            {e.phone}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                            {e.meter}%
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {new Date(e.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -213,7 +246,8 @@ export default function Dashboard() {
                             {idx + 1}. {q.text}
                           </p>
                           <p className="text-gray-700">
-                            Answer: <span className="font-semibold">{option?.text || answerKey}</span>
+                            Answer:{' '}
+                            <span className="font-semibold">{option?.text || answerKey}</span>
                           </p>
                         </div>
                       );
@@ -226,48 +260,70 @@ export default function Dashboard() {
 
           {/* Admins Tab */}
           {tab === 'admins' && (
-            <div className="bg-white rounded-lg shadow overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {admins.map(a => (
-                    <tr key={a._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{a.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">{a.status}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(a.createdAt).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                        {a.status === 'pending' ? (
-                          <>
-                            <button
-                              onClick={() => handleReview(a._id, true)}
-                              className="text-green-500 hover:text-green-700"
-                              title="Approve"
-                            >
-                              <FiCheckCircle size={20} />
-                            </button>
-                            <button
-                              onClick={() => handleReview(a._id, false)}
-                              className="text-red-500 hover:text-red-700"
-                              title="Reject"
-                            >
-                              <FiXCircle size={20} />
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-white rounded-lg shadow">
+              {loadingAdmins ? (
+                <div className="flex justify-center p-10">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {admins.map(a => (
+                        <tr key={a._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                            {a.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">
+                            {a.status}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {new Date(a.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
+                            {a.status === 'pending' ? (
+                              <>
+                                <button
+                                  onClick={() => handleReview(a._id, true)}
+                                  className="text-green-500 hover:text-green-700"
+                                  title="Approve"
+                                >
+                                  <FiCheckCircle size={20} />
+                                </button>
+                                <button
+                                  onClick={() => handleReview(a._id, false)}
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Reject"
+                                >
+                                  <FiXCircle size={20} />
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </main>
