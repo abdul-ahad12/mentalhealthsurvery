@@ -1,16 +1,16 @@
 import { IQuestion } from "@/models/Questions";
 
 export const INITIAL_QUESTIONS: Array<Pick<IQuestion, 'qid'|'text'|'options'>> = [
-    {
-      qid:  'q1',
-      text: 'I have been feeling cheerful and in good spirits.',
-      options: [
-        { key:'a', text:'Not at all',               weight:0 },
-        { key:'b', text:'Several days',             weight:1 },
-        { key:'c', text:'More than half the days',  weight:2 },
-        { key:'d', text:'Nearly every day',         weight:3 },
-      ]
-    },
+  {
+    qid: 'q1',
+    text: 'I have not been feeling cheerful or in good spirits.',
+    options: [
+      { key: 'a', text: 'Not at all',              weight: 0 },
+      { key: 'b', text: 'Several days',            weight: 1 },
+      { key: 'c', text: 'More than half the days', weight: 2 },
+      { key: 'd', text: 'Nearly every day',        weight: 3 },
+    ],
+  },
     {
       qid:  'q2',
       text: 'I have had trouble sleeping (too much or too little).',
@@ -62,14 +62,14 @@ export const INITIAL_QUESTIONS: Array<Pick<IQuestion, 'qid'|'text'|'options'>> =
       ]
     },
     {
-      qid:  'q7',
-      text: 'I have experienced little interest or pleasure in doing things.',
+      qid: 'q7',
+      text: 'I have experienced no interest or pleasure in doing things.',
       options: [
-        { key:'a', text:'Not at all',               weight:0 },
-        { key:'b', text:'Several days',             weight:1 },
-        { key:'c', text:'More than half the days',  weight:2 },
-        { key:'d', text:'Nearly every day',         weight:3 },
-      ]
+        { key: 'a', text: 'Not at all',              weight: 0 },
+        { key: 'b', text: 'Several days',            weight: 1 },
+        { key: 'c', text: 'More than half the days', weight: 2 },
+        { key: 'd', text: 'Nearly every day',        weight: 3 },
+      ],
     },
     {
       qid:  'q8',
