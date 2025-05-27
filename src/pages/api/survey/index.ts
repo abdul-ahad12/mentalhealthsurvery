@@ -33,19 +33,14 @@ export default async function handler(
 ) {
   await dbConnect();
   if (req.method === 'POST') {
-    const { email, phone, answers } = req.body as {
-      email: string;
-      phone: string;
+    const { answers } = req.body as {
       answers: Answers;
     };
-    // uniqueness check
-    if (await SurveyEntry.findOne({ $or: [{ email }, { phone }] })) {
-      return res.status(400).json({ error: 'Email or phone already used' });
-    }
     const { meter, result } = await computePsychologicalState(answers);
-    const entry = new SurveyEntry({ email, phone, answers, meter, result });
+    const entry = new SurveyEntry({ answers, meter, result });
     await entry.save();
     return res.status(201).json({ meter, result });
+    
   }
   res.setHeader('Allow', 'POST');
   res.status(405).end(`Method ${req.method} Not Allowed`);

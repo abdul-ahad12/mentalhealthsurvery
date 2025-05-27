@@ -41,11 +41,10 @@ export default function SurveyPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Determine if form is complete and valid
   const isFormComplete = useMemo(() => {
-    if (!email || !phone || !isEmailValid || !isPhoneValid) return false;
     return questions.every(q => !!answers[q.qid]);
-  }, [email, phone, answers, questions, isEmailValid, isPhoneValid]);
+  }, [answers, questions]);
+  
 
   const handleChoice = (qid: string, choice: string) => {
     setAnswers(prev => ({ ...prev, [qid]: choice }));
@@ -54,15 +53,12 @@ export default function SurveyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormComplete) {
-      toast.error('Please complete all fields and correct any errors.');
+      toast.error('Please answer all questions.');
       return;
     }
     try {
       setLoading(true);
-      // Preview result
-      const { data } = await axios.post('/api/survey/check', { answers });
-      // Save entry
-      await axios.post('/api/survey', { email, phone, answers });
+      const { data } = await axios.post('/api/survey', { answers });
       setResultData(data);
       setShowThankYou(true);
     } catch (err: any) {
@@ -72,7 +68,7 @@ export default function SurveyPage() {
       setLoading(false);
     }
   };
-
+  
   return (
     <>
       <Head>
@@ -157,38 +153,6 @@ export default function SurveyPage() {
               <p className="text-gray-600 mb-6">Help us understand your current psychological well-being. Your responses are confidential.</p>
 
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Email Field */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 ${!isEmailValid && email ? 'border-red-500' : ''}`}
-                      placeholder="you@example.com"
-                    />
-                    {!isEmailValid && email && (
-                      <p className="text-red-500 text-sm mt-1">Invalid email format.</p>
-                    )}
-                  </div>
-
-                  {/* Phone Field */}
-                  <div>
-                    <label className="block text-gray-700 mb-2">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 ${!isPhoneValid && phone ? 'border-red-500' : ''}`}
-                      placeholder="+1 234 567 890"
-                    />
-                    {!isPhoneValid && phone && (
-                      <p className="text-red-500 text-sm mt-1">Invalid phone format.</p>
-                    )}
-                  </div>
-                </div>
 
                 {/* Survey Questions */}
                 <div className="space-y-6">

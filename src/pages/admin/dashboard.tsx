@@ -5,20 +5,18 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import {
-  FiUsers,
-  FiList,
   FiCheckCircle,
   FiXCircle,
   FiAlertTriangle,
   FiSmile,
   FiAlertCircle,
+  FiList,
+  FiUsers,
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Entry {
   _id: string;
-  email: string;
-  phone: string;
   result: string;
   meter: number;
   createdAt: string;
@@ -60,7 +58,6 @@ export default function Dashboard() {
   }, [router, token]);
 
   const loadData = () => {
-    // load entries
     setLoadingEntries(true);
     axios
       .get<Entry[]>('/api/admin/entries', { headers: { Authorization: `Bearer ${token}` } })
@@ -68,7 +65,6 @@ export default function Dashboard() {
       .catch(() => toast.error('Failed to load entries.'))
       .finally(() => setLoadingEntries(false));
 
-    // load admins
     setLoadingAdmins(true);
     axios
       .get<AdminUser[]>('/api/admin/list', { headers: { Authorization: `Bearer ${token}` } })
@@ -76,7 +72,6 @@ export default function Dashboard() {
       .catch(() => toast.error('Failed to load admins.'))
       .finally(() => setLoadingAdmins(false));
 
-    // load questions for detail view
     axios
       .get<Question[]>('/api/survey/questions')
       .then(res => setQuestions(res.data))
@@ -97,7 +92,6 @@ export default function Dashboard() {
       .catch(() => toast.error('Action failed.'));
   };
 
-  // icon for entry status
   const StatusIcon = ({ meter }: { meter: number }) => {
     if (meter >= 80) return <FiSmile className="text-green-500" title="Healthy" />;
     if (meter >= 50) return <FiAlertCircle className="text-yellow-500" title="Mild Concerns" />;
@@ -166,10 +160,7 @@ export default function Dashboard() {
                           Status
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Phone
+                          Result
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Score
@@ -190,10 +181,7 @@ export default function Dashboard() {
                             <StatusIcon meter={e.meter} />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                            {e.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                            {e.phone}
+                            {e.result}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                             {e.meter}%
@@ -233,10 +221,10 @@ export default function Dashboard() {
                     ×
                   </button>
                   <h2 className="text-2xl font-semibold mb-4">Response Details</h2>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Submitted on: {new Date(selectedEntry.createdAt).toLocaleString()}
+                  </p>
                   <div className="space-y-6">
-                    <p className="text-sm text-gray-500">
-                      Submitted on: {new Date(selectedEntry.createdAt).toLocaleString()}
-                    </p>
                     {questions.map((q, idx) => {
                       const answerKey = selectedEntry.answers[q.qid];
                       const option = q.options.find(o => o.key === answerKey);
